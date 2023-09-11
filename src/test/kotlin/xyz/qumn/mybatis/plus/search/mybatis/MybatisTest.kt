@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.kotlin.KtQueryWrapper
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 import org.apache.ibatis.mapping.Environment
 import org.apache.ibatis.session.SqlSessionFactory
 import org.apache.ibatis.transaction.TransactionFactory
@@ -18,6 +19,8 @@ import xyz.qumn.mybatis.plus.search.annotation.handle
 import xyz.qumn.mybatis.plus.search.mapper.PersonMapper
 import java.sql.Connection
 import java.sql.Statement
+import java.time.Duration
+import java.time.Instant
 import javax.sql.DataSource
 
 fun getDataSource(): DataSource {
@@ -79,9 +82,17 @@ class MybatisTest : StringSpec({
     }
     "handle with multiple property should work" {
         getSessionFactory()
-        val searchReq = PersonSearchReq(age = 3, name = "zs")
+        val searchReq =
+            PersonSearchReq(
+                age = 3,
+                name = "zs",
+                createAt = arrayOf(Instant.now() - Duration.ofDays(1), Instant.now())
+            )
         val wp = LambdaQueryWrapper<Person>()
         handle(wp, Person::class.java, searchReq)
-        wp.targetSql shouldBe "(uname = ? AND age = ?)"
+        wp.targetSql shouldContain "uname = ?"
+        wp.targetSql shouldContain "create_at between ? and ?"
+        wp.targetSql shouldContain "age = ?"
     }
+
 })

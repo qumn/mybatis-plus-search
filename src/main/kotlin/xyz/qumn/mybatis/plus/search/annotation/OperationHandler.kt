@@ -1,22 +1,42 @@
 package xyz.qumn.mybatis.plus.search.annotation
 
 import com.baomidou.mybatisplus.core.conditions.AbstractWrapper
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
+import java.time.Instant
+import kotlin.reflect.KClass
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.javaField
 
 
 val tableCache = TableCache()
 
 fun <T, D> handle(wp: AbstractWrapper<T, *, *>, entity: Class<T>, searchDto: D) {
+    if (searchDto == null) return
     val searchDtoGetMethods =
         searchDto!!::class.java.methods.filter { it.name.startsWith("get") && it.name != "getClass" }
     for (searchDtoGetMethod in searchDtoGetMethods) {
         val fieldName = getFieldNameByGetMethod(searchDtoGetMethod.name)
         val columnName = tableCache.getColumnName(entity, fieldName) ?: continue
         val value = searchDtoGetMethod.invoke(searchDto) ?: continue
-        wp.apply("$columnName = {0}", value)
+        val operator = getOperator(searchDto!!::class, fieldName)
+        val (filterSql, parameter) = when (value) {
+            is Array<*> -> operator.doOperator(columnName, *(value as Array<out Any>))
+            is Collection<*> -> operator.doOperator(columnName, *(value.toTypedArray() as Array<out Any>))
+            else -> operator.doOperator(columnName, value)
+        }
+        if (filterSql != null) wp.apply(filterSql, *parameter)
     }
+}
+
+private fun getOperator(kClass: KClass<*>, fieldName: String): Operator {
+    val kProperty = kClass.memberProperties.find { it.name == fieldName }
+        ?: throw RuntimeException("can't find $fieldName in $kClass")
+    val operator = kProperty.findAnnotation<Operation>()?.operator
+        ?: kProperty.javaField?.getAnnotation(Operation::class.java)?.operator ?: EQ::class
+    return operator.primaryConstructor!!.call() as Operator
 }
 
 class TableCache {
@@ -25,9 +45,9 @@ class TableCache {
 
     fun getColumnName(clazz: Class<*>, columnName: String): String? {
         if (clazz !in tableColumns) {
-            LambdaUtils.getColumnMap(clazz)?.let {
-                tableColumns[clazz] = it
-            }
+            val columnMap = LambdaUtils.getColumnMap(clazz)
+                ?: throw java.lang.RuntimeException("place first add the $clazz mapper to mybatis plus")
+            tableColumns[clazz] = columnMap
         }
         return tableColumns[clazz]?.get(columnName.uppercase())?.column
     }
@@ -37,21 +57,12 @@ private fun getFieldNameByGetMethod(methodName: String): String {
     return methodName.substring(3).replaceFirstChar { it.lowercase() }
 }
 
-class OperationHandler {
-}
+class OperationHandler {}
 
 data class Person(val id: Long?, val age: Int)
 data class PersonSearchReq(
     val id: Long? = null,
     val age: Int? = null,
-    val name: String? = null
+    val name: String? = null,
+    @Operation(BETWEEN::class) val createAt: Array<Instant>? = null,
 )
-
-fun main() {
-    val columnMap = LambdaUtils.getColumnMap(Person::class.java)
-    println(columnMap)
-    val wp = LambdaQueryWrapper<Person>()
-    handle(wp, Person::class.java, PersonSearchReq(age = 1))
-
-    println(wp.targetSql)
-}

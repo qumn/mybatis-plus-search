@@ -1,43 +1,54 @@
 package xyz.qumn.mybatis.plus.search.annotation
 
-import com.baomidou.mybatisplus.core.conditions.AbstractWrapper
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Operation(val operator: KClass<*> = EQ::class)
 
-interface Operator<T, V> {
-    fun doOperator(wp: LambdaQueryWrapper<Any>, column: SFunction<T, *>, value: V)
+interface Operator {
+    fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>>
 }
 
-class EQ : Operator<Any, Any> {
-    override fun doOperator(wp: LambdaQueryWrapper<Any>, column: SFunction<Any, *>, value: Any) {
-        wp.eq(column, value)
+class EQ : Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String, Array<out Any>> {
+        return Pair("$column = {0}", value)
     }
 }
 
-//class GT : Operator<Any, Comparable<*>> {
-//    override fun doOperator(
-//        wp: AbstractWrapper<Any, SFunction<Any, *>, *>,
-//        column: SFunction<Any, *>,
-//        value: Comparable<*>,
-//    ) {
-//        wp.gt(column, value)
-//    }
-//}
-//
-//class LIKE : Operator<Any, Comparable<*>> {
-//    override fun doOperator(
-//        wp: AbstractWrapper<Any, SFunction<Any, *>, *>,
-//        column: SFunction<Any, *>,
-//        value: Comparable<*>,
-//    ) {
-//        wp.like(column, value)
-//    }
-//
-//}
-//
-//
+class GT : Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        return Pair("$column > {0}", value)
+    }
+}
+
+class LIKE : Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        return Pair("$column like '%{0}%'", value)
+    }
+}
+
+class IN : Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        if (value.isEmpty()) return Pair(null, value)
+        val sql = buildString {
+            append("$column in (")
+            for (i in value.indices) {
+                if (i == 0) {
+                    append("{$i}")
+                } else {
+                    append(", {$i}")
+                }
+            }
+            append(")")
+        }
+        return Pair(sql, value)
+    }
+}
+
+class BETWEEN : Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        if (value.isEmpty()) return Pair(null, value)
+        return Pair("$column between {0} and {1}", value)
+    }
+}
