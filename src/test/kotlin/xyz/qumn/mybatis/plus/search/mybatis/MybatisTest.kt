@@ -2,6 +2,8 @@ package xyz.qumn.mybatis.plus.search.mybatis;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration
 import com.baomidou.mybatisplus.core.MybatisSqlSessionFactoryBuilder
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
+import com.baomidou.mybatisplus.extension.kotlin.KtQueryWrapper
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -11,6 +13,8 @@ import org.apache.ibatis.transaction.TransactionFactory
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory
 import org.h2.jdbcx.JdbcDataSource
 import xyz.qumn.mybatis.plus.search.Entity.Person
+import xyz.qumn.mybatis.plus.search.annotation.PersonSearchReq
+import xyz.qumn.mybatis.plus.search.annotation.handle
 import xyz.qumn.mybatis.plus.search.mapper.PersonMapper
 import java.sql.Connection
 import java.sql.Statement
@@ -52,8 +56,32 @@ class MybatisTest : StringSpec({
         val person = Person(name = "zs", age = 1)
         personMapper.insert(person)
         val personSelected = personMapper.selectById(person.id)
+
         personSelected shouldNotBe null
         personSelected.name shouldBe person.name
         personSelected.age shouldBe person.age
+    }
+    "annotation handel should work" {
+        val sessionFactory = getSessionFactory()
+        val session = sessionFactory.openSession(true)
+        val personMapper = session.getMapper(PersonMapper::class.java)
+        val person = Person(name = "zs", age = 1)
+        personMapper.insert(person)
+        val wp = KtQueryWrapper(Person::class.java).eq(Person::name, "zs")
+        println(wp.targetSql)
+    }
+    "handle should work" {
+        getSessionFactory()
+        val searchReq = PersonSearchReq(age = 3)
+        val wp = LambdaQueryWrapper<Person>()
+        handle(wp, Person::class.java, searchReq)
+        wp.targetSql shouldBe "(age = ?)"
+    }
+    "handle with multiple property should work" {
+        getSessionFactory()
+        val searchReq = PersonSearchReq(age = 3, name = "zs")
+        val wp = LambdaQueryWrapper<Person>()
+        handle(wp, Person::class.java, searchReq)
+        wp.targetSql shouldBe "(uname = ? AND age = ?)"
     }
 })

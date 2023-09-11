@@ -19,25 +19,25 @@ class EQ : Operator<Any, Any> {
     }
 }
 
-class GT : Operator<Any, Comparable<*>> {
-    override fun doOperator(
-        wp: AbstractWrapper<Any, SFunction<Any, *>, *>,
-        column: SFunction<Any, *>,
-        value: Comparable<*>,
-    ) {
-        wp.gt(column, value)
-    }
-}
-
-class LIKE : Operator<Any, Comparable<*>> {
-    override fun doOperator(
-        wp: AbstractWrapper<Any, SFunction<Any, *>, *>,
-        column: SFunction<Any, *>,
-        value: Comparable<*>,
-    ) {
-        wp.like(column, value)
-    }
-
-}
-
-
+//class GT : Operator<Any, Comparable<*>> {
+//    override fun doOperator(
+//        wp: AbstractWrapper<Any, SFunction<Any, *>, *>,
+//        column: SFunction<Any, *>,
+//        value: Comparable<*>,
+//    ) {
+//        wp.gt(column, value)
+//    }
+//}
+//
+//class LIKE : Operator<Any, Comparable<*>> {
+//    override fun doOperator(
+//        wp: AbstractWrapper<Any, SFunction<Any, *>, *>,
+//        column: SFunction<Any, *>,
+//        value: Comparable<*>,
+//    ) {
+//        wp.like(column, value)
+//    }
+//
+//}
+//
+//
