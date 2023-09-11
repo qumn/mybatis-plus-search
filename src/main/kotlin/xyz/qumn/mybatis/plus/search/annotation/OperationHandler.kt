@@ -3,7 +3,6 @@ package xyz.qumn.mybatis.plus.search.annotation
 import com.baomidou.mybatisplus.core.conditions.AbstractWrapper
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
-import java.time.Instant
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
@@ -39,6 +38,10 @@ private fun getOperator(kClass: KClass<*>, fieldName: String): Operator {
     return operator.primaryConstructor!!.call() as Operator
 }
 
+private fun getFieldNameByGetMethod(methodName: String): String {
+    return methodName.substring(3).replaceFirstChar { it.lowercase() }
+}
+
 class TableCache {
     // tableName -> <fieldName -> columnNames>
     private val tableColumns: MutableMap<Class<*>, Map<String, ColumnCache>> = mutableMapOf()
@@ -53,16 +56,4 @@ class TableCache {
     }
 }
 
-private fun getFieldNameByGetMethod(methodName: String): String {
-    return methodName.substring(3).replaceFirstChar { it.lowercase() }
-}
 
-class OperationHandler {}
-
-data class Person(val id: Long?, val age: Int)
-data class PersonSearchReq(
-    val id: Long? = null,
-    val age: Int? = null,
-    val name: String? = null,
-    @Operation(BETWEEN::class) val createAt: Array<Instant>? = null,
-)
