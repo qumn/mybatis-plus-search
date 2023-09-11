@@ -7,12 +7,9 @@ import org.apache.ibatis.session.SqlSessionFactory
 import org.apache.ibatis.transaction.TransactionFactory
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory
 import org.h2.jdbcx.JdbcDataSource
-import xyz.qumn.mybatis.plus.search.annotation.BETWEEN
-import xyz.qumn.mybatis.plus.search.annotation.Operation
 import xyz.qumn.mybatis.plus.search.mapper.PersonMapper
 import java.sql.Connection
 import java.sql.Statement
-import java.time.Instant
 import javax.sql.DataSource
 
 

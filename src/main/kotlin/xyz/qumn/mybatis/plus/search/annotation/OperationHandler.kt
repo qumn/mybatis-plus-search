@@ -33,8 +33,9 @@ fun <T, D> handle(wp: AbstractWrapper<T, *, *>, entity: Class<T>, searchDto: D) 
 private fun getOperator(kClass: KClass<*>, fieldName: String): Operator {
     val kProperty = kClass.memberProperties.find { it.name == fieldName }
         ?: throw RuntimeException("can't find $fieldName in $kClass")
-    val operator = kProperty.findAnnotation<Operation>()?.operator
-        ?: kProperty.javaField?.getAnnotation(Operation::class.java)?.operator ?: EQ::class
+    val operator = kProperty.findAnnotation<Operation>()?.value
+        ?: kProperty.javaField?.getAnnotation(Operation::class.java)?.value
+        ?: EQ::class
     return operator.primaryConstructor!!.call() as Operator
 }
 

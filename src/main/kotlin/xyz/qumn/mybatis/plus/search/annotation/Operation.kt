@@ -4,7 +4,7 @@ import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Operation(val operator: KClass<*> = EQ::class)
+annotation class Operation(val value: KClass<*> = EQ::class)
 
 interface Operator {
     fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>>
