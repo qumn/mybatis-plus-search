@@ -17,7 +17,7 @@ public class JavaPersonSearchDto {
     @Operation(LIKE.class)
     private String name;
     @Operation(BETWEEN.class)
-    private Instant[] instant;
+    private Instant[] createAt;
 
     public Long getId() {
         return id;
@@ -43,12 +43,12 @@ public class JavaPersonSearchDto {
         this.name = name;
     }
 
-    public Instant[] getInstant() {
-        return instant;
+    public Instant[] getCreateAt() {
+        return createAt;
     }
 
-    public void setInstant(Instant[] instant) {
-        this.instant = instant;
+    public void setCreateAt(Instant[] createAt) {
+        this.createAt = createAt;
     }
 
     @Override
@@ -56,13 +56,13 @@ public class JavaPersonSearchDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         JavaPersonSearchDto that = (JavaPersonSearchDto) o;
-        return Objects.equals(id, that.id) && Objects.equals(age, that.age) && Objects.equals(name, that.name) && Arrays.equals(instant, that.instant);
+        return Objects.equals(id, that.id) && Objects.equals(age, that.age) && Objects.equals(name, that.name) && Arrays.equals(createAt, that.createAt);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(id, age, name);
-        result = 31 * result + Arrays.hashCode(instant);
+        result = 31 * result + Arrays.hashCode(createAt);
         return result;
     }
 }

@@ -12,7 +12,17 @@ import kotlin.reflect.jvm.javaField
 
 val tableCache = TableCache()
 
-fun <T, D> handle(wp: AbstractWrapper<T, *, *>, entity: Class<T>, searchDto: D) {
+// Convenient for use in kotlin
+inline fun <reified T, D> AbstractWrapper<T, *, *>.setSearchCondition(searchDto: D) {
+    setSearchCondition(this, T::class.java, searchDto)
+}
+
+/**
+ * the fields in searchDto need to match the names in entity
+ * if the field have no Operation annotation, the default operate is EQ
+ * if the field have Operation, use the operator of operation
+ */
+fun <T, D> setSearchCondition(wp: AbstractWrapper<T, *, *>, entity: Class<T>, searchDto: D) {
     if (searchDto == null) return
     val searchDtoGetMethods =
         searchDto!!::class.java.methods.filter { it.name.startsWith("get") && it.name != "getClass" }

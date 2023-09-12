@@ -5,10 +5,11 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
 import xyz.qumn.mybatis.plus.search.Entity.Person
-import xyz.qumn.mybatis.plus.search.annotation.handle
+import xyz.qumn.mybatis.plus.search.annotation.setSearchCondition
 import xyz.qumn.mybatis.plus.search.dto.PersonSearchReq
 import xyz.qumn.mybatis.plus.search.mapper.PersonMapper
 import xyz.qumn.mybatis.plus.search.util.getSessionFactory
@@ -39,7 +40,7 @@ class MybatisTest : StringSpec({
     "handel should work" {
         val searchReq = PersonSearchReq(age = 3)
         val wp = LambdaQueryWrapper<Person>()
-        handle(wp, Person::class.java, searchReq)
+        setSearchCondition(wp, Person::class.java, searchReq)
         wp.targetSql shouldContain "age > ?"
     }
 
@@ -52,10 +53,25 @@ class MybatisTest : StringSpec({
                 createAt = arrayOf(Instant.now() - Duration.ofDays(1), Instant.now())
             )
         val wp = LambdaQueryWrapper<Person>()
-        handle(wp, Person::class.java, searchReq)
+        setSearchCondition(wp, Person::class.java, searchReq)
         wp.targetSql shouldContain "uname = ?"
         wp.targetSql shouldContain "create_at between ? and ?"
         wp.targetSql shouldContain "age > ?"
+    }
+
+    "should work" {
+        val searchReq =
+            PersonSearchReq(
+                age = 3,
+                name = "zs",
+                createAt = arrayOf(Instant.now() - Duration.ofDays(1), Instant.now())
+            )
+        val wp = LambdaQueryWrapper<Person>()
+        wp.setSearchCondition(searchReq)
+        wp.targetSql shouldContain "uname = ?"
+        wp.targetSql shouldContain "create_at between ? and ?"
+        wp.targetSql shouldContain "age > ?"
+        wp.targetSql shouldNotContain "uid = ?"
     }
 
 })
