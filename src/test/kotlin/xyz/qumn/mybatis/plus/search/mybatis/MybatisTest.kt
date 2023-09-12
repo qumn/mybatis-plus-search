@@ -74,4 +74,21 @@ class MybatisTest : StringSpec({
         wp.targetSql shouldNotContain "uid = ?"
     }
 
+    "sql should execute" {
+        val p1 = Person(name = "zs", createAt = Instant.now(), age = 15)
+        val p2 = Person(name = "zs1", createAt = Instant.now(), age = 17)
+        val p3 = Person(name = "wu", createAt = Instant.now(), age = 18)
+        personMapper.insert(p1)
+        personMapper.insert(p2)
+        personMapper.insert(p3)
+
+        val searchReq = PersonSearchReq(name = "z")
+        val wp = LambdaQueryWrapper<Person>()
+        wp.setSearchCondition(searchReq)
+
+        personMapper.selectList(wp).forEach {
+            println(it)
+        }
+    }
+
 })

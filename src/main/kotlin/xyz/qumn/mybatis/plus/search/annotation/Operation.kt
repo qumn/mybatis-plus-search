@@ -21,7 +21,15 @@ class EQ : Operator {
     override fun doOperator(column: String, vararg value: Any): Pair<String, Array<out Any>> {
         return Pair("$column = {0}", value)
     }
+
 }
+
+class NE: Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        return Pair("$column <> {0}", value)
+    }
+}
+
 
 class GT : Operator {
     override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
@@ -29,11 +37,43 @@ class GT : Operator {
     }
 }
 
-class LIKE : Operator {
+class GE: Operator {
     override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
-        return Pair("$column like '%{0}%'", value)
+        return Pair("$column >= {0}", value)
     }
 }
+
+class LT: Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        return Pair("$column < {0}", value)
+    }
+}
+class LE: Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        return Pair("$column <= {0}", value)
+    }
+}
+
+
+class LIKE : Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        return Pair("$column like {0}", arrayOf("%${value[0]}%"))
+    }
+}
+
+class LEFTLIKE : Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        return Pair("$column like {0}", arrayOf("%${value[0]}"))
+    }
+}
+
+class RIGHTLIKE : Operator {
+    override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
+        return Pair("$column like {0}", arrayOf("${value[0]}%"))
+    }
+}
+
+
 
 class IN : Operator {
     override fun doOperator(column: String, vararg value: Any): Pair<String?, Array<out Any>> {
