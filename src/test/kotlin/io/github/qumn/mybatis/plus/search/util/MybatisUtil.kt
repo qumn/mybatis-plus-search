@@ -2,6 +2,7 @@ package io.github.qumn.mybatis.plus.search.util
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration
 import com.baomidou.mybatisplus.core.MybatisSqlSessionFactoryBuilder
+import org.apache.ibatis.logging.stdout.StdOutImpl
 import org.apache.ibatis.mapping.Environment
 import org.apache.ibatis.session.SqlSessionFactory
 import org.apache.ibatis.transaction.TransactionFactory
@@ -41,6 +42,7 @@ fun getSessionFactory(): SqlSessionFactory {
     val transactionFactory: TransactionFactory = JdbcTransactionFactory()
     val environment = Environment("Production", transactionFactory, dataSource)
     val configuration = MybatisConfiguration(environment)
+    configuration.logImpl = StdOutImpl::class.java
     configuration.addMapper(PersonMapper::class.java)
     return MybatisSqlSessionFactoryBuilder().build(configuration)
 }
